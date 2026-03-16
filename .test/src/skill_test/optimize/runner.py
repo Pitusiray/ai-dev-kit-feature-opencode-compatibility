@@ -164,13 +164,20 @@ def _evaluate_on_tasks(evaluator, candidate, tasks, label: str = "Evaluating", m
                         idx = futures[future]
                         task_id = tasks[idx].get("id", f"task_{idx}")
                         inst = gepa_instances[idx]
-                        score, side_info = 0.0, {"_error": str(e), "scores": {"final": 0.0}}
+                        score, side_info = (
+                            0.0,
+                            {"_error": str(e), "scores": {"final": 0.0}},
+                        )
                         logger.warning("Evaluator failed for task %s: %s", task_id, e)
                     per_task[task_id] = score
                     side_info_by_id[task_id] = side_info
                     side_info_by_input[inst.get("input", f"task_{idx}")] = side_info
                     completed += 1
-                    print(f"\r  {label}: {completed}/{total} ({task_id})...", end="", flush=True)
+                    print(
+                        f"\r  {label}: {completed}/{total} ({task_id})...",
+                        end="",
+                        flush=True,
+                    )
             except TimeoutError:
                 # as_completed timeout — score remaining tasks as 0.0
                 for future, idx in futures.items():
@@ -179,7 +186,11 @@ def _evaluate_on_tasks(evaluator, candidate, tasks, label: str = "Evaluating", m
                         inst = gepa_instances[idx]
                         per_task.setdefault(task_id, 0.0)
                         side_info_by_id.setdefault(
-                            task_id, {"_error": "as_completed timeout (900s)", "scores": {"final": 0.0}}
+                            task_id,
+                            {
+                                "_error": "as_completed timeout (900s)",
+                                "scores": {"final": 0.0},
+                            },
                         )
                         side_info_by_input.setdefault(inst.get("input", f"task_{idx}"), side_info_by_id[task_id])
                         future.cancel()
@@ -535,6 +546,7 @@ def optimize_skill(
             if _manifest_path.exists():
                 try:
                     import yaml as _yaml
+
                     _manifest_data = _yaml.safe_load(_manifest_path.read_text()) or {}
                     _manifest_tool_modules = _manifest_data.get("tool_modules")
                 except Exception:
@@ -643,7 +655,10 @@ def optimize_skill(
 
         print(f"\nScoring baseline ({len(train)} tasks, ~5 LLM calls each)...")
         original_score, original_per_task, si_by_id, _ = _evaluate_on_tasks(
-            evaluator, seed_candidate, train, label="Baseline",
+            evaluator,
+            seed_candidate,
+            train,
+            label="Baseline",
             max_parallel=_eval_max_parallel,
         )
         print(f"Current score: {original_score:.3f}")
@@ -668,7 +683,10 @@ def optimize_skill(
         if agent_evaluator:
             print(f"\nAgent baseline ({len(train)} tasks)...")
             dry_run_agent_score, agent_per_task, dry_run_agent_si, _ = _evaluate_on_tasks(
-                agent_evaluator, seed_candidate, train, label="Agent baseline",
+                agent_evaluator,
+                seed_candidate,
+                train,
+                label="Agent baseline",
                 max_parallel=parallel_agents,
             )
             print(f"Agent baseline score: {dry_run_agent_score:.3f}")
@@ -704,13 +722,17 @@ def optimize_skill(
     _eval_desc = "2 agent runs + judges" if agent_eval_full else "~5 LLM calls"
     print(f"\nScoring {_eval_label.lower()} ({len(train)} tasks, {_eval_desc} each)...")
     original_score, original_per_task, si_by_id, si_by_input = _evaluate_on_tasks(
-        evaluator, seed_candidate, train, label=_eval_label,
+        evaluator,
+        seed_candidate,
+        train,
+        label=_eval_label,
         max_parallel=_eval_max_parallel,
     )
 
     # 6. Build background and objective
     if agent_eval_full:
         from .agent_evaluator import build_agent_eval_background
+
         background = build_agent_eval_background(
             skill_name,
             total_original_tokens,
@@ -764,7 +786,10 @@ def optimize_skill(
     if agent_evaluator and not agent_eval_full:
         print(f"\n  Agent baseline scoring ({len(train)} tasks)...")
         agent_baseline_score, agent_baseline_per_task, agent_baseline_si, _ = _evaluate_on_tasks(
-            agent_evaluator, seed_candidate, train, label="Agent baseline",
+            agent_evaluator,
+            seed_candidate,
+            train,
+            label="Agent baseline",
             max_parallel=parallel_agents,
         )
         print(f"  Agent baseline score: {agent_baseline_score:.3f}")
@@ -826,7 +851,10 @@ def optimize_skill(
 
         candidate = result.best_candidate
         pass_score, _, pass_si_by_id, _ = _evaluate_on_tasks(
-            evaluator, candidate, train, label=f"Pass {pass_num}",
+            evaluator,
+            candidate,
+            train,
+            label=f"Pass {pass_num}",
             max_parallel=_eval_max_parallel,
         )
         improvement = pass_score - best_score
@@ -859,7 +887,10 @@ def optimize_skill(
     val_scores: dict[str, float] = {}
     if val:
         _, val_scores, _, _ = _evaluate_on_tasks(
-            evaluator, best, val, label="Validation",
+            evaluator,
+            best,
+            val,
+            label="Validation",
             max_parallel=_eval_max_parallel,
         )
 
@@ -878,7 +909,10 @@ def optimize_skill(
     if agent_evaluator and not agent_eval_full:
         print(f"\n  Agent validation scoring ({len(train)} tasks on best candidate)...")
         agent_validation_score, agent_val_per_task, agent_validation_si, _ = _evaluate_on_tasks(
-            agent_evaluator, best, train, label="Agent validation",
+            agent_evaluator,
+            best,
+            train,
+            label="Agent validation",
             max_parallel=parallel_agents,
         )
         print(f"  Agent validation score: {agent_validation_score:.3f}")

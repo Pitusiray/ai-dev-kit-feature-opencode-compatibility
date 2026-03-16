@@ -197,8 +197,7 @@ def _load_mcp_config() -> dict[str, Any]:
                 resolved_cfg[key] = val.replace("${CLAUDE_PLUGIN_ROOT}", str(repo_root))
             elif isinstance(val, list):
                 resolved_cfg[key] = [
-                    v.replace("${CLAUDE_PLUGIN_ROOT}", str(repo_root)) if isinstance(v, str) else v
-                    for v in val
+                    v.replace("${CLAUDE_PLUGIN_ROOT}", str(repo_root)) if isinstance(v, str) else v for v in val
                 ]
             else:
                 resolved_cfg[key] = val
@@ -283,7 +282,11 @@ def _get_agent_env() -> dict[str, str]:
 
     # 2. Env vars with known prefixes override settings file values
     # Skip internal Claude Code vars that would confuse the subprocess
-    _skip_keys = {"CLAUDE_CODE_SSE_PORT", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY"}
+    _skip_keys = {
+        "CLAUDE_CODE_SSE_PORT",
+        "CLAUDE_CODE_ENTRYPOINT",
+        "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY",
+    }
     for key, value in os.environ.items():
         if key in _skip_keys:
             continue
@@ -510,7 +513,7 @@ async def run_agent(
     # Pass Databricks auth env vars to MCP server processes
     if mcp_config:
         mcp_env = {k: v for k, v in env.items() if k.startswith(("DATABRICKS_",))}
-        for server_name, server_cfg in mcp_config.items():
+        for _server_name, server_cfg in mcp_config.items():
             if "env" not in server_cfg and mcp_env:
                 server_cfg["env"] = mcp_env
 
