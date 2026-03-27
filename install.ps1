@@ -1555,14 +1555,13 @@ function Write-OpenCodeMcpJson {
             type = "local"
 			command    = @($script:VenvPython -replace '\\', '/') + @($script:McpEntry -replace '\\', '/')
             environment     = [PSCustomObject]@{ DATABRICKS_CONFIG_PROFILE = $script:Profile_ }
-			enabled = $true
+			enabled = $false
         }
         $existing.mcp | Add-Member -NotePropertyName "databricks" -NotePropertyValue $dbEntry -Force
         $existing  = $existing | ConvertTo-Json -Depth 10
 		$Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 		[System.IO.File]::WriteAllLines($Path, $existing, $Utf8NoBomEncoding)
     } else {
-		Write-Msg "  Debug: Else $existing"
 		$config = [PSCustomObject]@{
 			'$schema' = 'https://opencode.ai/config.json'
 			mcp = @{
@@ -1570,7 +1569,7 @@ function Write-OpenCodeMcpJson {
 					type    = 'local'
 					command = @($script:VenvPython -replace '\\', '/') + @($script:McpEntry -replace '\\', '/')
 					environment     = [PSCustomObject]@{ DATABRICKS_CONFIG_PROFILE = $script:Profile_ }
-					enabled = $true
+					enabled = $false
 				}
 			}
 		} | ConvertTo-Json -Depth 3
@@ -1655,11 +1654,12 @@ function Write-McpConfigs {
                 if ($script:Scope -eq "global") {
                     Write-OpenCodeMcpJson (Join-Path $env:USERPROFILE ".config\opencode\opencode.json")
                 } else {
-					Write-Msg "  Debug: $BaseDir"
                     Write-OpenCodeMcpJson (Join-Path $BaseDir "opencode.json")
 					
                 }
                 Write-Ok "OpenCode CLI MCP config"
+				Write-Warn "OpenCode: MCP servers are disabled by default."
+                Write-Msg "  Enable in: opencode -> /mcps -> Toggle 'databricks' by pressing spacebar"
             }
         }
     }
