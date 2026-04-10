@@ -1551,9 +1551,6 @@ function Write-OpenCodeMcpJson {
     }
 
     if ($existing) {
-        if (-not $existing.'$schema') {
-            $existing | Add-Member -NotePropertyName "$schema" -NotePropertyValue ([PSCustomObject]@{}) -Force
-        }
         if (-not $existing.mcp) {
             $existing | Add-Member -NotePropertyName "mcp" -NotePropertyValue ([PSCustomObject]@{}) -Force
         }
