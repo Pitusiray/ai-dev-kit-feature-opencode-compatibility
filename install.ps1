@@ -1167,7 +1167,13 @@ function Install-Skills {
                     $dirs += Join-Path $BaseDir ".agents\skills"
                 }
             }
-            "opencode"  { $dirs += Join-Path $BaseDir ".opencode\skills" }
+			"opencode" {
+                if ($script:Scope -eq "global") {
+                    $dirs += Join-Path $env:USERPROFILE ".config\opencode\skills"
+                } else {
+                    $dirs += Join-Path $BaseDir ".opencode\skills"
+                }
+            }
         }
     }
     $dirs = $dirs | Select-Object -Unique
